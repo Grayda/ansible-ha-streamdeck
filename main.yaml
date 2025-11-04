@@ -1,0 +1,40 @@
+- name: Install Docker 
+  hosts: streamdeck-host
+  roles:
+    - role: geerlingguy.docker
+      vars:
+        docker_edition: ce
+        docker_install_compose_plugin: true
+      become: true
+
+- name: Install the Stream Deck HA Addon
+  hosts: streamdeck-host 
+  vars:
+    hass_url: 192.168.1.2:8123
+    hass_token: ""
+    websocket_protocol: ws
+  tasks:
+    - name: Set up HA Stream Deck Container
+      community.docker.docker_compose_v2:
+        project_name: ha-streamdeck
+        definition:
+          services:
+            ha-streamdeck:
+              container_name: ha-streamdeck
+              image: basnijholt/home-assistant-streamdeck-yaml:latest
+              environment:
+                - HASS_HOST={{ hass_url }}
+                - HASS_TOKEN={{ hass_token }}
+                - WEBSOCKET_PROTOCOL={{ hass_ws_protocol }}
+              volumes:
+                - "{{ ansible_user_dir }}/configuration.yaml:/app/configuration.yaml"
+                - /etc/localtime:/etc/localtime:ro
+                - /dev/bus/usb:/dev/bus/usb
+              privileged: true
+              restart: unless-stopped
+              network_mode: host    
+
+    - name: Copy Streamdeck configuration
+      ansible.builtin.template:
+        src: "configuration.yaml.j2"
+        dest: "{{ ansible_user_dir }}/configuration.yaml"
