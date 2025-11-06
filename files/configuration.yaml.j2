@@ -1,0 +1,17 @@
+brightness: 100 # Default brightness of the Stream Deck (0-100)
+auto_reload: true # Automatically reload the configuration file when it changes
+pages:
+  - name: Home
+    buttons:
+      - entity_id: light.outside_lights
+        service: light.toggle
+        text: |
+          Outside
+          Lights
+      - entity_id: switch.air_conditioner
+        icon_mdi: snowflake
+        service: switch.toggle
+        text: |
+          Air
+          Conditioner
+      
